@@ -78,10 +78,10 @@
                     </div>
                     {% if room.next_activity %}
                     <div class="text-[11px] text-slate-500">
-                        Kuliah berikutnya: <span class="font-semibold text-slate-700">{{ room.next_activity.course_name }}</span> pukul <span class="font-mono font-semibold">{{ room.next_activity.start_time }}</span>
+                        Kegiatan berikutnya: <span class="font-semibold text-slate-700">{{ room.next_activity.title }}</span> ({% if room.next_activity.type == 'lecture' %}Kuliah{% else %}Acara{% endif %}) pukul <span class="font-mono font-semibold">{{ room.next_activity.start_time }}</span>
                     </div>
                     {% else %}
-                    <div class="text-[11px] text-slate-400">Tidak ada jadwal kuliah lagi hari ini.</div>
+                    <div class="text-[11px] text-slate-400">Tidak ada jadwal kuliah/acara lagi hari ini.</div>
                     {% endif %}
                 </div>
                 {% endif %}

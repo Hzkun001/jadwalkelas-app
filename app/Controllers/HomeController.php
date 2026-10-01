@@ -98,8 +98,8 @@ class HomeController {
                 continue;
             }
 
-            // 3. Room is currently empty - check next upcoming activity today
-            $stmt = $this->db->prepare("SELECT * FROM schedules 
+            // 3. Room is currently empty - check next upcoming activity today (lecture or event)
+            $stmt = $this->db->prepare("SELECT id, course_name as title, start_time, 'lecture' as type FROM schedules 
                                         WHERE room_id = :room_id 
                                           AND day_of_week = :day 
                                           AND start_time > :current_time 
@@ -111,9 +111,31 @@ class HomeController {
             ]);
             $nextLecture = $stmt->fetch(PDO::FETCH_ASSOC);
 
+            $stmt = $this->db->prepare("SELECT id, event_name as title, start_time, 'event' as type FROM event_bookings 
+                                        WHERE room_id = :room_id 
+                                          AND booking_date = :date 
+                                          AND status = 'approved' 
+                                          AND start_time > :current_time 
+                                        ORDER BY start_time ASC LIMIT 1");
+            $stmt->execute([
+                ':room_id' => $roomId,
+                ':date' => $date,
+                ':current_time' => $currentTime,
+            ]);
+            $nextEvent = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $nextActivity = null;
+            if ($nextLecture && $nextEvent) {
+                $nextActivity = ($nextLecture['start_time'] <= $nextEvent['start_time']) ? $nextLecture : $nextEvent;
+            } elseif ($nextLecture) {
+                $nextActivity = $nextLecture;
+            } elseif ($nextEvent) {
+                $nextActivity = $nextEvent;
+            }
+
             $room['status'] = 'empty';
             $room['current_activity'] = null;
-            $room['next_activity'] = $nextLecture ?: null;
+            $room['next_activity'] = $nextActivity;
             $room['status_label'] = 'Tersedia / Kosong';
             $room['status_badge'] = 'bg-emerald-100 text-emerald-700 border-emerald-200';
             $result[] = $room;
