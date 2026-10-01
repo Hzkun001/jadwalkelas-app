@@ -1,0 +1,94 @@
+{% extends "layouts/app.html.twig" %}
+
+{% block title %}Daftar Peminjaman Ruangan - Jadwal Kelas FST{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Status Peminjaman Ruang Kelas</h1>
+            <p class="text-sm text-slate-500 mt-1">Daftar permohonan penggunaan ruang lokal FST untuk kegiatan non-perkuliahan.</p>
+        </div>
+        <a href="/booking/create" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Ajukan Peminjaman Baru
+        </a>
+    </div>
+
+    {% if success %}
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-3 rounded-2xl flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="py-3.5 px-4">Nama Acara</th>
+                        <th class="py-3.5 px-4">Penyelenggara</th>
+                        <th class="py-3.5 px-4">Ruangan</th>
+                        <th class="py-3.5 px-4">Waktu Kegiatan</th>
+                        <th class="py-3.5 px-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for b in bookings %}
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-3.5 px-4 font-bold text-slate-900">
+                            <div>{{ b.event_name }}</div>
+                            {% if b.description %}
+                            <div class="text-xs font-normal text-slate-400 truncate max-w-xs">{{ b.description }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-4 font-medium text-slate-600">
+                            {{ b.organizer }}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="font-bold text-slate-800">{{ b.room_name }}</span>
+                            <span class="block text-xs text-slate-400 font-mono">{{ b.room_code }}</span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <div class="font-medium">{{ b.booking_date }}</div>
+                            <div class="text-xs text-slate-500 font-mono">{{ b.start_time }} - {{ b.end_time }} WIB</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            {% if b.status == 'approved' %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    Disetujui
+                                </span>
+                            {% elseif b.status == 'rejected' %}
+                                <div>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                        Ditolak
+                                    </span>
+                                    {% if b.rejection_reason %}
+                                    <span class="block text-[11px] text-rose-600 mt-1 max-w-xs italic">{{ b.rejection_reason }}</span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                    Menunggu Persetujuan
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="py-12 text-center text-slate-400">
+                            Belum ada permohonan peminjaman ruangan.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "layouts/app.html.twig" %}
+
+{% block title %}Panel Admin Ruangan FST - Jadwal Kelas App{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Panel Verifikasi & Administrasi Ruangan</h1>
+            <p class="text-sm text-slate-500 mt-1">Kelola persetujuan peminjaman acara dan ketersediaan ruang kelas FST.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/admin/rooms" class="px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-bold rounded-xl shadow-xs transition-colors">
+                Kelola Master Ruangan
+            </a>
+        </div>
+    </div>
+
+    {% if success %}
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-3 rounded-2xl flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Pending Requests Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <h2 class="text-lg font-bold text-slate-900">Permohonan Menunggu Verifikasi</h2>
+                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{{ pending|length }}</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-700">
+                <thead class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="py-3.5 px-4">Acara & Penyelenggara</th>
+                        <th class="py-3.5 px-4">Ruangan</th>
+                        <th class="py-3.5 px-4">Jadwal Diajukan</th>
+                        <th class="py-3.5 px-4">Deskripsi / Kebutuhan</th>
+                        <th class="py-3.5 px-4 text-right">Aksi Verifikasi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for p in pending %}
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-3.5 px-4">
+                            <div class="font-bold text-slate-900">{{ p.event_name }}</div>
+                            <div class="text-xs text-slate-500">Oleh: {{ p.organizer }}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="font-bold text-slate-800">{{ p.room_name }}</span>
+                            <span class="block text-xs text-slate-400 font-mono">{{ p.room_code }}</span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <div class="font-medium">{{ p.booking_date }}</div>
+                            <div class="text-xs text-indigo-600 font-mono font-bold">{{ p.start_time }} - {{ p.end_time }} WIB</div>
+                        </td>
+                        <td class="py-3.5 px-4 text-xs text-slate-600 max-w-xs">
+                            {{ p.description ?: '-' }}
+                        </td>
+                        <td class="py-3.5 px-4 text-right space-x-2">
+                            <!-- Approve Action -->
+                            <form action="/admin/bookings/{{ p.id }}/approve" method="POST" class="inline">
+                                <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-xs transition-colors">
+                                    Setujui
+                                </button>
+                            </form>
+
+                            <!-- Reject Action Form -->
+                            <button type="button" onclick="document.getElementById('reject-modal-{{ p.id }}').classList.remove('hidden')"
+                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-lg transition-colors">
+                                Tolak
+                            </button>
+
+                            <!-- Reject Modal -->
+                            <div id="reject-modal-{{ p.id }}" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden text-left">
+                                <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+                                    <h3 class="text-lg font-bold text-slate-900">Tolak Permohonan Peminjaman</h3>
+                                    <p class="text-xs text-slate-500">Berikan alasan penolakan agar pemohon mengetahui penyebabnya.</p>
+                                    
+                                    <form action="/admin/bookings/{{ p.id }}/reject" method="POST" class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-700 mb-1">Alasan Penolakan</label>
+                                            <textarea name="rejection_reason" rows="3" required placeholder="Contoh: Ruangan akan digunakan untuk pemeliharaan fasilitas..."
+                                                class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+                                        </div>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button type="button" onclick="document.getElementById('reject-modal-{{ p.id }}').classList.add('hidden')"
+                                                class="px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">
+                                                Batal
+                                            </button>
+                                            <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg">
+                                                Konfirmasi Tolak
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="py-12 text-center text-slate-400">
+                            Tidak ada permohonan peminjaman yang menunggu persetujuan.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
