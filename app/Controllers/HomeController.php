@@ -17,6 +17,10 @@ class HomeController {
     }
 
     public function index(): void {
+        $this->calendar();
+    }
+
+    public function live(): void {
         $now = time();
         $date = date('Y-m-d', $now);
         $dayOfWeek = (int) date('N', $now);
@@ -46,10 +50,30 @@ class HomeController {
 
     public function calendar(): void {
         $rooms = Room::getAllActive($this->db);
+        $now = time();
+        $date = date('Y-m-d', $now);
+        $dayOfWeek = (int) date('N', $now);
+        $currentTime = date('H:i', $now);
+
+        $roomStatuses = $this->getRoomStatusesForTime($dayOfWeek, $date, $currentTime);
+        $totalRooms = count($roomStatuses);
+        $availableCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'empty'));
+        $lectureCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'lecture'));
+        $eventCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'event'));
+
         echo Flight::view()->render('home/calendar.html.twig', [
             'active_nav' => 'calendar',
             'rooms' => $rooms,
-            'today' => date('Y-m-d'),
+            'today' => $date,
+            'current_time' => $currentTime,
+            'day_name' => $this->getDayNameIndonesian($dayOfWeek),
+            'current_date' => date('d F Y', $now),
+            'stats' => [
+                'total' => $totalRooms,
+                'available' => $availableCount,
+                'lecture' => $lectureCount,
+                'event' => $eventCount,
+            ],
         ]);
     }
 

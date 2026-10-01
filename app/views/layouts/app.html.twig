@@ -32,11 +32,11 @@
                 </a>
 
                 <nav class="hidden md:flex items-center gap-1 pl-4 border-l border-slate-200">
-                    <a href="/" class="px-3.5 py-2 rounded-xl text-sm font-extrabold transition-colors {% if active_nav == 'live' %}text-indigo-700 bg-indigo-50 border border-indigo-200{% else %}text-slate-700 hover:text-slate-900 hover:bg-slate-100{% endif %}">
-                        Live Status
-                    </a>
-                    <a href="/calendar" class="px-3.5 py-2 rounded-xl text-sm font-extrabold transition-colors {% if active_nav == 'calendar' %}text-indigo-700 bg-indigo-50 border border-indigo-200{% else %}text-slate-700 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                    <a href="/" class="px-3.5 py-2 rounded-xl text-sm font-extrabold transition-colors {% if active_nav == 'calendar' %}text-indigo-700 bg-indigo-50 border border-indigo-200{% else %}text-slate-700 hover:text-slate-900 hover:bg-slate-100{% endif %}">
                         Kalender Jadwal
+                    </a>
+                    <a href="/live" class="px-3.5 py-2 rounded-xl text-sm font-extrabold transition-colors {% if active_nav == 'live' %}text-indigo-700 bg-indigo-50 border border-indigo-200{% else %}text-slate-700 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                        Live Status Ruangan
                     </a>
                     <a href="/booking/create" class="px-3.5 py-2 rounded-xl text-sm font-extrabold transition-colors {% if active_nav == 'booking' %}text-indigo-700 bg-indigo-50 border border-indigo-200{% else %}text-slate-700 hover:text-slate-900 hover:bg-slate-100{% endif %}">
                         Pinjam Ruang Acara
@@ -70,8 +70,8 @@
 
         <!-- Mobile sub-navigation (Large Thumb Targets) -->
         <div class="md:hidden flex border-t border-slate-200 px-3 py-2 gap-2 overflow-x-auto bg-slate-100 text-sm">
-            <a href="/" class="whitespace-nowrap px-4 py-2 rounded-xl font-extrabold text-xs {% if active_nav == 'live' %}bg-indigo-600 text-white shadow-xs{% else %}bg-white text-slate-800 border border-slate-200{% endif %}">Live Status</a>
-            <a href="/calendar" class="whitespace-nowrap px-4 py-2 rounded-xl font-extrabold text-xs {% if active_nav == 'calendar' %}bg-indigo-600 text-white shadow-xs{% else %}bg-white text-slate-800 border border-slate-200{% endif %}">Kalender</a>
+            <a href="/" class="whitespace-nowrap px-4 py-2 rounded-xl font-extrabold text-xs {% if active_nav == 'calendar' %}bg-indigo-600 text-white shadow-xs{% else %}bg-white text-slate-800 border border-slate-200{% endif %}">Kalender Jadwal</a>
+            <a href="/live" class="whitespace-nowrap px-4 py-2 rounded-xl font-extrabold text-xs {% if active_nav == 'live' %}bg-indigo-600 text-white shadow-xs{% else %}bg-white text-slate-800 border border-slate-200{% endif %}">Live Status</a>
             <a href="/booking/create" class="whitespace-nowrap px-4 py-2 rounded-xl font-extrabold text-xs {% if active_nav == 'booking' %}bg-indigo-600 text-white shadow-xs{% else %}bg-white text-slate-800 border border-slate-200{% endif %}">Pinjam Ruang</a>
         </div>
     </header>

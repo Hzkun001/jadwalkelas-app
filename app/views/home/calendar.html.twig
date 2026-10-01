@@ -1,84 +1,146 @@
 {% extends "layouts/app.html.twig" %}
 
-{% block title %}Kalender Jadwal Kuliah & Ruangan FST - Jadwal Kelas App{% endblock %}
+{% block title %}Kalender Jadwal Kuliah & Ruangan FST - HMJ TI{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
-    <!-- Top Action & Filter Bar -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <!-- Date Navigation -->
-        <div class="flex items-center gap-3">
-            <div class="flex items-center bg-slate-100 rounded-xl p-1 gap-1">
-                <button id="btn-prev" class="p-1.5 rounded-lg hover:bg-white hover:shadow-2xs text-slate-700 transition-all" title="Sebelumnya">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </button>
-                <button id="btn-today" class="px-3 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-2xs rounded-lg transition-all">
-                    Hari Ini
-                </button>
-                <button id="btn-next" class="p-1.5 rounded-lg hover:bg-white hover:shadow-2xs text-slate-700 transition-all" title="Berikutnya">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
+    <!-- Header Hero & Mini Live Status Banner -->
+    <div class="bg-white rounded-3xl border-2 border-slate-200 p-6 md:p-7 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="space-y-1.5">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-900 border border-indigo-200">
+                    <span>🗓️ PUSAT JADWAL & KALENDER FST</span>
+                    <span>&bull;</span>
+                    <span>Semester Aktif</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                    Jadwal Perkuliahan & Pemakaian Ruangan
+                </h1>
+                <p class="text-sm sm:text-base font-medium text-slate-700 max-w-2xl leading-relaxed">
+                    Pantau seluruh jadwal perkuliahan kelas dan temukan waktu serta lokal kelas yang kosong untuk nugas, belajar kelompok, atau kegiatan organisasi.
+                </p>
             </div>
 
-            <h1 id="calendar-title" class="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
-                Memuat tanggal...
-            </h1>
+            <!-- Mini Live Status Card -->
+            <div class="bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center gap-4 shrink-0">
+                <div>
+                    <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">KONDISI SAAT INI ({{ current_time }} WIB)</span>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                            {{ stats.available }} Ruang Kosong
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-300">
+                            {{ stats.lecture }} Sedang Kuliah
+                        </span>
+                    </div>
+                </div>
+                <div class="h-8 w-px bg-slate-300 hidden sm:block"></div>
+                <a href="/live" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black text-indigo-700 bg-white hover:bg-indigo-50 border-2 border-indigo-200 shadow-2xs transition-all hover:scale-[1.02]">
+                    <span>Cek Live Status</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </a>
+            </div>
         </div>
 
-        <!-- Controls: Room Filter & Mode Toggles -->
-        <div class="flex flex-wrap items-center gap-3">
-            <!-- Room Selector -->
-            <div class="flex items-center gap-2">
-                <label for="room-filter-select" class="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Ruangan:</label>
-                <select id="room-filter-select" class="bg-slate-50 border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <option value="0">Semua Ruang Lokal FST</option>
-                    {% for r in rooms %}
-                        <option value="{{ r.id }}">{{ r.name }} ({{ r.room_type }})</option>
-                    {% endfor %}
-                </select>
+        <!-- Controls: Room Filter, View Modes & Date Navigation -->
+        <div class="mt-6 pt-6 border-t-2 border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <!-- Left: Date Navigation & Current Date Title -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-center bg-slate-100 rounded-2xl p-1 gap-1 border border-slate-200">
+                    <button id="btn-prev" class="p-2 rounded-xl hover:bg-white text-slate-800 hover:shadow-xs transition-all" title="Sebelumnya">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <button id="btn-today" class="px-3 py-1.5 text-xs font-black text-slate-800 hover:bg-white hover:shadow-xs rounded-xl transition-all">
+                        Hari Ini
+                    </button>
+                    <button id="btn-next" class="p-2 rounded-xl hover:bg-white text-slate-800 hover:shadow-xs transition-all" title="Berikutnya">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div>
+                    <h2 id="calendar-title" class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                        Memuat tanggal...
+                    </h2>
+                </div>
             </div>
 
-            <!-- Mode Switch (Week vs Month) -->
-            <div class="flex items-center bg-slate-100 rounded-xl p-1 gap-1">
-                <button id="btn-mode-week" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white shadow-xs">
-                    Mingguan
-                </button>
-                <button id="btn-mode-month" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:bg-slate-200/60">
-                    Bulanan
-                </button>
-            </div>
+            <!-- Right: Room Filter & Mode Toggles -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Room Selector -->
+                <div class="flex items-center gap-2">
+                    <label for="room-filter-select" class="text-xs font-extrabold text-slate-700 uppercase tracking-wider whitespace-nowrap">Ruang:</label>
+                    <select id="room-filter-select" class="bg-white border-2 border-slate-300 text-slate-900 text-xs sm:text-sm font-bold rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="0">Semua Ruangan (8 Lokal)</option>
+                        {% for r in rooms %}
+                            <option value="{{ r.id }}">{{ r.name }} ({% if r.room_type == 'laboratorium' %}Lab{% else %}Kelas{% endif %})</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Quick booking button -->
-            <a href="/booking/create" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Pinjam Ruang
-            </a>
+                <!-- Mode Toggles (Harian, Mingguan, Bulanan) -->
+                <div class="flex items-center bg-slate-100 rounded-2xl p-1 gap-1 border border-slate-200">
+                    <button id="btn-mode-day" class="px-3.5 py-1.5 text-xs font-black rounded-xl bg-indigo-600 text-white shadow-xs transition-all">
+                        📋 Harian
+                    </button>
+                    <button id="btn-mode-week" class="px-3.5 py-1.5 text-xs font-black rounded-xl text-slate-700 hover:bg-white transition-all">
+                        📅 Mingguan
+                    </button>
+                    <button id="btn-mode-month" class="px-3.5 py-1.5 text-xs font-black rounded-xl text-slate-700 hover:bg-white transition-all">
+                        🗓️ Bulanan
+                    </button>
+                </div>
+
+                <!-- Pinjam Ruang Button -->
+                <a href="/booking/create" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black rounded-xl shadow-xs transition-all hover:scale-[1.02]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Pinjam Ruang</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Day Tabs (Only active in Day/Harian mode) -->
+        <div id="day-tabs-container" class="mt-4 pt-4 border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto pb-1">
+            <span class="text-xs font-black text-slate-600 uppercase tracking-wider mr-1 hidden sm:inline">Pilih Hari:</span>
+            <button type="button" data-day="1" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all bg-indigo-600 text-white border-indigo-600">Senin</button>
+            <button type="button" data-day="2" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all bg-white text-slate-800 border-slate-200 hover:bg-slate-50">Selasa</button>
+            <button type="button" data-day="3" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all bg-white text-slate-800 border-slate-200 hover:bg-slate-50">Rabu</button>
+            <button type="button" data-day="4" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all bg-white text-slate-800 border-slate-200 hover:bg-slate-50">Kamis</button>
+            <button type="button" data-day="5" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all bg-white text-slate-800 border-slate-200 hover:bg-slate-50">Jumat</button>
+            <button type="button" data-day="6" class="day-tab px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all bg-white text-slate-800 border-slate-200 hover:bg-slate-50">Sabtu</button>
         </div>
     </div>
 
     <!-- Color Legend -->
-    <div class="flex items-center gap-4 text-xs font-medium text-slate-600 px-1">
-        <div class="flex items-center gap-1.5">
-            <span class="w-3 h-3 rounded-md bg-blue-600"></span>
+    <div class="flex items-center flex-wrap gap-4 text-xs font-bold text-slate-700 px-2">
+        <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-md bg-blue-600 shadow-2xs"></span>
             <span>Kuliah Reguler (Prioritas #1)</span>
         </div>
-        <div class="flex items-center gap-1.5">
-            <span class="w-3 h-3 rounded-md bg-amber-600"></span>
-            <span>Peminjaman Acara Ormawa</span>
+        <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-md bg-amber-500 shadow-2xs"></span>
+            <span>Acara Ormawa / Mahasiswa</span>
         </div>
-        <div class="text-slate-400 italic text-[11px] ml-auto hidden sm:block">
-            * Klik salah satu kegiatan di kalender untuk melihat rincian lengkap
+        <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-md bg-emerald-100 border border-emerald-400"></span>
+            <span>Slot Kosong (Bebas Digunakan)</span>
+        </div>
+        <div class="text-slate-500 italic text-xs ml-auto hidden md:block">
+            * Tip: Klik salah satu blok jadwal untuk melihat detail mata kuliah & dosen
         </div>
     </div>
 
     <!-- Calendar Viewport Card -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+    <div class="bg-white rounded-3xl border-2 border-slate-200 shadow-xs overflow-hidden">
         <div id="timetable-calendar">
             <!-- Dynamic calendar content rendered by calendar.js -->
         </div>
@@ -87,47 +149,57 @@
 
 <!-- Modal Detail Kegiatan -->
 <div id="event-detail-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-150">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-slate-200 space-y-5 animate-in fade-in zoom-in duration-150">
         <div class="flex items-start justify-between gap-3">
             <div>
-                <span id="modal-badge" class="inline-block px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-800 mb-2">
-                    Tipe Kegiatan
+                <span id="modal-badge" class="inline-block px-3 py-1 text-xs font-black rounded-lg bg-blue-600 text-white mb-2">
+                    Kuliah Reguler
                 </span>
-                <h2 id="modal-title" class="text-xl font-bold text-slate-900 leading-tight">Nama Kegiatan</h2>
+                <h2 id="modal-title" class="text-xl sm:text-2xl font-black text-slate-900 leading-tight">Nama Kegiatan</h2>
             </div>
-            <button id="modal-close-btn" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <button id="modal-close-btn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
         </div>
 
-        <div class="space-y-3 pt-2 border-t border-slate-100 text-sm">
-            <div class="flex items-center gap-3 text-slate-600">
-                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div id="modal-time" class="text-slate-800">Waktu pelaksanaan</div>
-            </div>
-
-            <div class="flex items-center gap-3 text-slate-600">
-                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
+        <div class="space-y-3.5 pt-3 border-t-2 border-slate-100 text-sm">
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
                 <div>
-                    <span class="text-slate-500">Ruangan:</span>
-                    <span id="modal-room" class="font-bold text-slate-900">Nama Ruangan</span>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Waktu Pelaksanaan</span>
+                    <span id="modal-time" class="text-slate-900 font-extrabold font-mono">08:00 - 10:00 WIB</span>
                 </div>
             </div>
 
-            <div class="p-3 bg-slate-50 rounded-xl space-y-1">
-                <div id="modal-extra-label" class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Detail Pelaksana</div>
-                <div id="modal-extra-value" class="text-sm font-bold text-slate-800">Nama Penyelenggara / Dosen</div>
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Ruangan</span>
+                    <span id="modal-room" class="font-black text-slate-900 text-base">Nama Ruangan</span>
+                </div>
+            </div>
+
+            <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                <span id="modal-extra-label" class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Detail Pelaksana</span>
+                <span id="modal-extra-value" class="text-sm font-black text-slate-900 block">Dosen / Penyelenggara</span>
             </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 text-right">
-            <button onclick="document.getElementById('event-detail-modal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors">
+        <div class="pt-3 border-t-2 border-slate-100 flex items-center justify-between gap-3">
+            <a href="/booking/create" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition-all shadow-xs">
+                Ajukan Pinjam Ruang
+            </a>
+            <button onclick="document.getElementById('event-detail-modal').classList.add('hidden')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black rounded-xl transition-colors">
                 Tutup
             </button>
         </div>

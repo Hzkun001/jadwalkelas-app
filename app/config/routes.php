@@ -6,15 +6,20 @@ use App\Controllers\HomeController;
 use App\Controllers\BookingController;
 use App\Controllers\AdminController;
 
-// Public web views
+// Public web views - Kalender sebagai halaman utama
 Flight::route('GET /', function() {
     $ctrl = new HomeController(Flight::db());
-    $ctrl->index();
+    $ctrl->calendar();
 });
 
 Flight::route('GET /calendar', function() {
     $ctrl = new HomeController(Flight::db());
     $ctrl->calendar();
+});
+
+Flight::route('GET /live', function() {
+    $ctrl = new HomeController(Flight::db());
+    $ctrl->live();
 });
 
 // Booking routes
