@@ -33,9 +33,14 @@ class HomeController {
         $lectureCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'lecture'));
         $eventCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'event'));
 
+        $saintekRooms = array_values(array_filter($roomStatuses, fn($r) => $r['building_group'] === 'saintek'));
+        $labRooms = array_values(array_filter($roomStatuses, fn($r) => $r['building_group'] === 'lab'));
+
         echo Flight::view()->render('home/index.html.twig', [
             'active_nav' => 'live',
             'rooms' => $roomStatuses,
+            'saintek_rooms' => $saintekRooms,
+            'lab_rooms' => $labRooms,
             'current_date' => date('d F Y', $now),
             'current_time' => $currentTime,
             'day_name' => $this->getDayNameIndonesian($dayOfWeek),
@@ -61,9 +66,14 @@ class HomeController {
         $lectureCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'lecture'));
         $eventCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'event'));
 
+        $saintekRooms = array_values(array_filter($rooms, fn($r) => (stripos($r['name'], 'fst') === 0) || (stripos($r['code'], 'fst') === 0)));
+        $labRooms = array_values(array_filter($rooms, fn($r) => !((stripos($r['name'], 'fst') === 0) || (stripos($r['code'], 'fst') === 0))));
+
         echo Flight::view()->render('home/calendar.html.twig', [
             'active_nav' => 'calendar',
             'rooms' => $rooms,
+            'saintek_rooms' => $saintekRooms,
+            'lab_rooms' => $labRooms,
             'today' => $date,
             'current_time' => $currentTime,
             'day_name' => $this->getDayNameIndonesian($dayOfWeek),
@@ -83,6 +93,11 @@ class HomeController {
 
         foreach ($rooms as $room) {
             $roomId = $room['id'];
+
+            // Tag building group
+            $isSaintek = (stripos($room['name'], 'fst') === 0) || (stripos($room['code'], 'fst') === 0);
+            $room['building_group'] = $isSaintek ? 'saintek' : 'lab';
+            $room['building_name'] = $isSaintek ? 'Gedung Saintek' : 'Gedung Lab Komputer';
 
             // 1. Check current ongoing lecture
             $stmt = $this->db->prepare("SELECT * FROM schedules 

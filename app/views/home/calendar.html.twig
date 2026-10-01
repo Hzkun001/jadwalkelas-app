@@ -79,9 +79,16 @@
                     <label for="room-filter-select" class="text-xs font-extrabold text-slate-700 uppercase tracking-wider whitespace-nowrap">Ruang:</label>
                     <select id="room-filter-select" class="bg-white border-2 border-slate-300 text-slate-900 text-xs sm:text-sm font-bold rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         <option value="0">Semua Ruangan (8 Lokal)</option>
-                        {% for r in rooms %}
-                            <option value="{{ r.id }}">{{ r.name }} ({% if r.room_type == 'laboratorium' %}Lab{% else %}Kelas{% endif %})</option>
-                        {% endfor %}
+                        <optgroup label="🏢 Gedung Saintek (5 Kelas)">
+                            {% for r in saintek_rooms %}
+                                <option value="{{ r.id }}">{{ r.name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="💻 Gedung Lab Komputer (3 Lab)">
+                            {% for r in lab_rooms %}
+                                <option value="{{ r.id }}">{{ r.name }}</option>
+                            {% endfor %}
+                        </optgroup>
                     </select>
                 </div>
 
