@@ -1,106 +1,314 @@
 {% extends "layouts/app.html.twig" %}
 
-{% block title %}Live Status Ruang Kelas FST - Jadwal Kelas App{% endblock %}
+{% block title %}Live Status Ruangan FST - Monitoring HMJ TI{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
-    <!-- Header Section -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-                    Live Monitoring
-                </span>
-                <span class="text-xs text-slate-500 font-medium">{{ day_name }}, {{ current_date }}</span>
+    <!-- Header Hero Section -->
+    <div class="bg-white rounded-3xl border-2 border-slate-200 p-6 md:p-8 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-100 text-indigo-900 border border-indigo-200">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span>LIVE MONITORING LOKAL FST</span>
+                    <span>&bull;</span>
+                    <span>{{ day_name }}, {{ current_date }}</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                    Ketersediaan Ruang Kelas & Laboratorium
+                </h1>
+                <p class="text-sm sm:text-base font-medium text-slate-700 max-w-2xl leading-relaxed">
+                    Inisiatif mahasiswa Teknologi Informasi untuk memantau ruangan kosong secara riil dan mencegah bentrok perkuliahan di lingkungan FST.
+                </p>
             </div>
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Ketersediaan Ruang Kelas Lokal FST</h1>
-            <p class="text-sm text-slate-500 mt-0.5">Pantau penggunaan ruang teori & laboratorium secara langsung untuk mencegah bentrok kuliah.</p>
+
+            <!-- Jam Saat Ini & Tombol Cepat -->
+            <div class="flex flex-wrap items-center gap-4 bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl">
+                <div>
+                    <span class="text-xs font-bold text-slate-600 uppercase tracking-wider block">WAKTU SAAT INI</span>
+                    <span class="text-3xl font-black text-indigo-700 font-mono tracking-tight">{{ current_time }} <span class="text-sm font-bold text-slate-600">WIB</span></span>
+                </div>
+                <div class="h-10 w-px bg-slate-300 hidden sm:block"></div>
+                <a href="/calendar" class="inline-flex items-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Lihat Kalender Mingguan
+                </a>
+            </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <div class="text-right">
-                <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Jam Saat Ini</div>
-                <div class="text-2xl font-extrabold text-indigo-600 font-mono">{{ current_time }}</div>
-            </div>
-            <a href="/calendar" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Tampilan Kalender
-            </a>
+        <!-- 3 Quick Status Hero Cards (Touch/Click to Filter) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t-2 border-slate-100">
+            <!-- Ruang Kosong -->
+            <button type="button" onclick="setQuickFilter('empty')" class="group text-left p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 hover:border-emerald-500 hover:bg-emerald-100/70 transition-all flex items-center justify-between shadow-xs">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 block">KOSONG SEKARANG</span>
+                    <span class="text-2xl sm:text-3xl font-black text-emerald-800">{{ stats.available }} <span class="text-sm font-bold text-emerald-900">Ruangan</span></span>
+                    <span class="text-xs font-semibold text-emerald-700 block mt-0.5">Bebas dipakai nugas/kelas</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-sm group-hover:scale-110 transition-transform">
+                    ✓
+                </div>
+            </button>
+
+            <!-- Sedang Kuliah -->
+            <button type="button" onclick="setQuickFilter('lecture')" class="group text-left p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 hover:border-rose-500 hover:bg-rose-100/70 transition-all flex items-center justify-between shadow-xs">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-rose-900 block">SEDANG KULIAH</span>
+                    <span class="text-2xl sm:text-3xl font-black text-rose-800">{{ stats.lecture }} <span class="text-sm font-bold text-rose-900">Ruangan</span></span>
+                    <span class="text-xs font-semibold text-rose-700 block mt-0.5">Prioritas kelas reguler</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center font-bold text-xl shadow-sm group-hover:scale-110 transition-transform">
+                    📖
+                </div>
+            </button>
+
+            <!-- Sedang Acara -->
+            <button type="button" onclick="setQuickFilter('event')" class="group text-left p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 hover:border-amber-500 hover:bg-amber-100/70 transition-all flex items-center justify-between shadow-xs">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-amber-950 block">KEGIATAN / ACARA</span>
+                    <span class="text-2xl sm:text-3xl font-black text-amber-900">{{ stats.event }} <span class="text-sm font-bold text-amber-950">Ruangan</span></span>
+                    <span class="text-xs font-semibold text-amber-800 block mt-0.5">Peminjaman ormawa</span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xl shadow-sm group-hover:scale-110 transition-transform">
+                    🎪
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Buttons Bar (Mobile thumb-friendly) -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+            <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider hidden sm:inline-block">Filter:</span>
+            <button type="button" data-filter="all" onclick="setFilter('all')" class="filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-slate-900 text-white border-slate-900 shadow-xs">
+                Semua ({{ stats.total }})
+            </button>
+            <button type="button" data-filter="empty" onclick="setFilter('empty')" class="filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50">
+                🟢 Ruang Kosong ({{ stats.available }})
+            </button>
+            <button type="button" data-filter="lecture" onclick="setFilter('lecture')" class="filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-white text-rose-800 border-rose-300 hover:bg-rose-50">
+                🔴 Sedang Kuliah ({{ stats.lecture }})
+            </button>
+            <button type="button" data-filter="lab" onclick="setFilter('lab')" class="filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-white text-slate-800 border-slate-300 hover:bg-slate-100">
+                💻 Lab Komputer
+            </button>
+            <button type="button" data-filter="teori" onclick="setFilter('teori')" class="filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-white text-slate-800 border-slate-300 hover:bg-slate-100">
+                🏢 Ruang Teori
+            </button>
+        </div>
+
+        <div id="filter-count" class="text-xs font-bold text-slate-600">
+            Menampilkan {{ stats.total }} ruangan
         </div>
     </div>
 
     <!-- Live Grid Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div id="rooms-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {% for room in rooms %}
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-indigo-300 transition-all flex flex-col justify-between">
-            <div class="space-y-3">
+        <div class="room-card bg-white rounded-3xl border-2 border-slate-200 border-l-[8px] {{ room.status_border }} p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+             data-status="{{ room.status }}"
+             data-type="{{ room.room_type }}">
+            <div class="space-y-4">
+                <!-- Card Header -->
                 <div class="flex items-start justify-between gap-2">
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">{{ room.room_type }}</span>
-                        <h2 class="text-lg font-bold text-slate-900 leading-tight">{{ room.name }}</h2>
-                        <p class="text-xs text-slate-500">{{ room.building }} &bull; Kapasitas {{ room.capacity }}</p>
+                        <div class="flex items-center gap-1.5 mb-1">
+                            <span class="text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                                {% if room.room_type == 'laboratorium' %}💻 Lab Komputer{% else %}🏢 Ruang Teori{% endif %}
+                            </span>
+                        </div>
+                        <h2 class="text-2xl font-black text-slate-900 leading-none tracking-tight">{{ room.name }}</h2>
+                        <p class="text-xs font-semibold text-slate-600 mt-1">
+                            {{ room.building }} &bull; Kapasitas {{ room.capacity }} Kursi
+                        </p>
                     </div>
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ room.status_badge }}">
-                        {{ room.status_label }}
-                    </span>
-                </div>
 
-                <!-- Status Body -->
-                {% if room.status == 'lecture' %}
-                <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl space-y-1">
-                    <div class="text-xs font-bold text-blue-900">{{ room.current_activity.course_name }}</div>
-                    <div class="text-xs text-blue-700 flex items-center justify-between">
-                        <span class="font-medium">Kelas: {{ room.current_activity.class_name }}</span>
-                        <span class="font-mono font-semibold">{{ room.current_activity.start_time }} - {{ room.current_activity.end_time }}</span>
-                    </div>
-                    {% if room.current_activity.lecturer_name %}
-                    <div class="text-[11px] text-blue-600 truncate">Dosen: {{ room.current_activity.lecturer_name }}</div>
+                    <!-- Badge Status Solid -->
+                    {% if room.status == 'empty' %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-emerald-600 text-white shadow-xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                        KOSONG
+                    </span>
+                    {% elseif room.status == 'lecture' %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-rose-600 text-white shadow-xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                        KULIAH
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-amber-500 text-slate-950 shadow-xs">
+                        ACARA
+                    </span>
                     {% endif %}
                 </div>
-                {% elseif room.status == 'event' %}
-                <div class="p-3 bg-amber-50/70 border border-amber-100 rounded-xl space-y-1">
-                    <div class="text-xs font-bold text-amber-900">{{ room.current_activity.event_name }}</div>
-                    <div class="text-xs text-amber-700 flex items-center justify-between">
-                        <span class="font-medium">Oleh: {{ room.current_activity.organizer }}</span>
-                        <span class="font-mono font-semibold">{{ room.current_activity.start_time }} - {{ room.current_activity.end_time }}</span>
+
+                <!-- Status Body Container -->
+                {% if room.status == 'lecture' %}
+                <div class="p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl space-y-2.5">
+                    <div>
+                        <span class="text-[11px] font-extrabold uppercase text-rose-800 tracking-wider block">MATA KULIAH BERJALAN:</span>
+                        <div class="text-base font-black text-rose-950 leading-snug">{{ room.current_activity.course_name }}</div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-xs font-bold text-rose-900 bg-white/90 p-2.5 rounded-xl border border-rose-200">
+                        <span>Kelas: <strong class="text-slate-900">{{ room.current_activity.class_name }}</strong></span>
+                        <span class="font-mono bg-rose-100 text-rose-900 px-2 py-0.5 rounded font-extrabold">{{ room.current_activity.start_time }} - {{ room.current_activity.end_time }}</span>
+                    </div>
+
+                    {% if room.current_activity.lecturer_name %}
+                    <div class="text-xs font-semibold text-slate-700">
+                        Dosen: <strong class="text-slate-900">{{ room.current_activity.lecturer_name }}</strong>
+                    </div>
+                    {% endif %}
+
+                    <div class="pt-1 text-xs font-black text-rose-700 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Selesai pukul {{ room.current_activity.end_time }} WIB
                     </div>
                 </div>
-                {% else %}
-                <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-1">
-                    <div class="text-xs text-emerald-600 font-semibold flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Ruangan Bebas Digunakan
+
+                {% elseif room.status == 'event' %}
+                <div class="p-4 bg-amber-50 border-2 border-amber-200 rounded-2xl space-y-2.5">
+                    <div>
+                        <span class="text-[11px] font-extrabold uppercase text-amber-900 tracking-wider block">ACARA BERLANGSUNG:</span>
+                        <div class="text-base font-black text-amber-950 leading-snug">{{ room.current_activity.event_name }}</div>
                     </div>
+
+                    <div class="text-xs font-bold text-amber-900 bg-white/90 p-2.5 rounded-xl border border-amber-200 flex items-center justify-between">
+                        <span>Oleh: <strong class="text-slate-900">{{ room.current_activity.organizer }}</strong></span>
+                        <span class="font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-extrabold">{{ room.current_activity.start_time }} - {{ room.current_activity.end_time }}</span>
+                    </div>
+
+                    <div class="pt-1 text-xs font-black text-amber-800 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Selesai pukul {{ room.current_activity.end_time }} WIB
+                    </div>
+                </div>
+
+                {% else %}
+                <!-- Status Room Empty -->
+                <div class="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-2xl space-y-2.5">
+                    <div class="text-sm text-emerald-900 font-black flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                        RUANGAN BEBAS DIGUNAKAN
+                    </div>
+
                     {% if room.next_activity %}
-                    <div class="text-[11px] text-slate-500">
-                        Kegiatan berikutnya: <span class="font-semibold text-slate-700">{{ room.next_activity.title }}</span> ({% if room.next_activity.type == 'lecture' %}Kuliah{% else %}Acara{% endif %}) pukul <span class="font-mono font-semibold">{{ room.next_activity.start_time }}</span>
+                    <div class="text-xs font-medium text-slate-800 bg-white/95 p-3 rounded-xl border border-emerald-200 space-y-1">
+                        <div class="text-emerald-950 font-black text-xs flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Bebas s.d. pukul {{ room.next_activity.start_time }} WIB
+                        </div>
+                        <div class="text-slate-700 text-xs">
+                            Jadwal berikutnya: <strong class="text-slate-900">{{ room.next_activity.title }}</strong> ({% if room.next_activity.type == 'lecture' %}Kuliah{% else %}Acara{% endif %})
+                        </div>
                     </div>
                     {% else %}
-                    <div class="text-[11px] text-slate-400">Tidak ada jadwal kuliah/acara lagi hari ini.</div>
+                    <div class="text-xs font-bold text-emerald-900 bg-white/90 p-3 rounded-xl border border-emerald-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Bebas hingga perkuliahan berakhir hari ini.</span>
+                    </div>
                     {% endif %}
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Card Footer Action -->
-            <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between">
-                <a href="/calendar?room={{ room.id }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1">
-                    Cek Kalender
+            <!-- Card Footer Action Buttons -->
+            <div class="pt-4 mt-4 border-t-2 border-slate-100 grid grid-cols-2 gap-2">
+                <a href="/calendar?room={{ room.id }}" class="text-center py-2.5 px-3 rounded-xl text-xs font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors flex items-center justify-center gap-1">
+                    <span>Lihat Jadwal</span>
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </a>
-                <a href="/booking/create?room_id={{ room.id }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                <a href="/booking/create?room_id={{ room.id }}" class="text-center py-2.5 px-3 rounded-xl text-xs font-extrabold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-colors flex items-center justify-center">
                     Pinjam Ruang
                 </a>
             </div>
         </div>
         {% endfor %}
     </div>
+
+    <!-- Empty Filter Notice -->
+    <div id="no-rooms-message" class="hidden text-center py-12 bg-white rounded-3xl border-2 border-slate-200 p-8">
+        <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+            🔍
+        </div>
+        <h3 class="text-lg font-black text-slate-900">Tidak ada ruangan yang cocok dengan filter</h3>
+        <p class="text-sm font-medium text-slate-600 mt-1">Coba pilih filter lain di tombol atas.</p>
+        <button type="button" onclick="setFilter('all')" class="mt-4 px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl">
+            Tampilkan Semua Ruangan
+        </button>
+    </div>
 </div>
+
+<!-- Simple Instant Filtering Script -->
+<script>
+function setFilter(filterType) {
+    const cards = document.querySelectorAll('.room-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+    let visibleCount = 0;
+
+    // Update active button state
+    buttons.forEach(btn => {
+        if (btn.getAttribute('data-filter') === filterType) {
+            btn.className = 'filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-slate-900 text-white border-slate-900 shadow-xs';
+        } else {
+            btn.className = 'filter-btn px-4 py-2 rounded-xl text-sm font-extrabold border-2 transition-all bg-white text-slate-800 border-slate-300 hover:bg-slate-100';
+        }
+    });
+
+    cards.forEach(card => {
+        const status = card.getAttribute('data-status');
+        const type = card.getAttribute('data-type');
+        let show = false;
+
+        if (filterType === 'all') {
+            show = true;
+        } else if (filterType === 'empty' && status === 'empty') {
+            show = true;
+        } else if (filterType === 'lecture' && status === 'lecture') {
+            show = true;
+        } else if (filterType === 'lab' && type === 'laboratorium') {
+            show = true;
+        } else if (filterType === 'teori' && type === 'kelas') {
+            show = true;
+        }
+
+        if (show) {
+            card.style.display = 'flex';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const countElem = document.getElementById('filter-count');
+    if (countElem) {
+        countElem.textContent = `Menampilkan ${visibleCount} ruangan`;
+    }
+
+    const noRooms = document.getElementById('no-rooms-message');
+    if (noRooms) {
+        noRooms.classList.toggle('hidden', visibleCount > 0);
+    }
+}
+
+function setQuickFilter(type) {
+    setFilter(type);
+    const roomsSection = document.getElementById('rooms-grid');
+    if (roomsSection) {
+        roomsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+</script>
 {% endblock %}

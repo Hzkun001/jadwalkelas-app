@@ -24,12 +24,23 @@ class HomeController {
 
         $roomStatuses = $this->getRoomStatusesForTime($dayOfWeek, $date, $currentTime);
 
+        $totalRooms = count($roomStatuses);
+        $availableCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'empty'));
+        $lectureCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'lecture'));
+        $eventCount = count(array_filter($roomStatuses, fn($r) => $r['status'] === 'event'));
+
         echo Flight::view()->render('home/index.html.twig', [
             'active_nav' => 'live',
             'rooms' => $roomStatuses,
             'current_date' => date('d F Y', $now),
             'current_time' => $currentTime,
             'day_name' => $this->getDayNameIndonesian($dayOfWeek),
+            'stats' => [
+                'total' => $totalRooms,
+                'available' => $availableCount,
+                'lecture' => $lectureCount,
+                'event' => $eventCount,
+            ],
         ]);
     }
 
@@ -68,7 +79,9 @@ class HomeController {
                 $room['status'] = 'lecture';
                 $room['current_activity'] = $currentLecture;
                 $room['status_label'] = 'Sedang Kuliah';
-                $room['status_badge'] = 'bg-blue-100 text-blue-700 border-blue-200';
+                $room['status_badge'] = 'bg-rose-100 text-rose-800 border-rose-300 font-bold';
+                $room['status_border'] = 'border-l-rose-500';
+                $room['status_dot'] = 'bg-rose-500';
                 $result[] = $room;
                 continue;
             }
@@ -93,7 +106,9 @@ class HomeController {
                 $room['status'] = 'event';
                 $room['current_activity'] = $currentEvent;
                 $room['status_label'] = 'Sedang Acara';
-                $room['status_badge'] = 'bg-amber-100 text-amber-700 border-amber-200';
+                $room['status_badge'] = 'bg-amber-100 text-amber-900 border-amber-300 font-bold';
+                $room['status_border'] = 'border-l-amber-500';
+                $room['status_dot'] = 'bg-amber-500';
                 $result[] = $room;
                 continue;
             }
@@ -136,8 +151,10 @@ class HomeController {
             $room['status'] = 'empty';
             $room['current_activity'] = null;
             $room['next_activity'] = $nextActivity;
-            $room['status_label'] = 'Tersedia / Kosong';
-            $room['status_badge'] = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            $room['status_label'] = 'Ruang Kosong';
+            $room['status_badge'] = 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold';
+            $room['status_border'] = 'border-l-emerald-500';
+            $room['status_dot'] = 'bg-emerald-500';
             $result[] = $room;
         }
 
