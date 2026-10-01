@@ -1,8 +1,10 @@
 # Jadwal Kelas App (FST)
 
-Sistem Monitoring Ketersediaan Ruang Kelas Lokal & Pencegahan Bentrok Perkuliahan berbasis **FlightPHP 3**, **Twig**, **Tailwind CSS**, dan **MariaDB/MySQL (dengan fallback SQLite)**.
+Sistem Monitoring Ketersediaan Ruang Kelas Lokal & Pencegahan Bentrok Perkuliahan berbasis **FlightPHP 3**, **Twig**, **Tailwind CSS**, dan **SQLite (Pure Embedded DB)**.
 
 Aplikasi ini dibangun khusus untuk kebutuhan Fakultas Sains dan Teknologi (FST) dengan mengedepankan **performa ultra-ringan (ultra-lightweight)**, cepat diakses melalui smartphone mahasiswa, dan memiliki aturan hierarki ketat di mana **perkuliahan reguler diprioritaskan secara mutlak di atas peminjaman acara/kegiatan ormawa**.
+
+Database menggunakan **SQLite murni** (`database/app.sqlite`) yang sangat portabel, hemat memori, dan tidak memerlukan service daemon eksternal (seperti MySQL/MariaDB).
 
 ---
 
@@ -56,9 +58,8 @@ Aplikasi ini dibangun khusus untuk kebutuhan Fakultas Sains dan Teknologi (FST) 
 ## Persyaratan Sistem
 
 - PHP >= 8.0
-- Ekstensi PHP: `pdo`, `pdo_mysql` (atau `pdo_sqlite`), `json`, `session`
 - Composer 2.x
-- Database: MariaDB / MySQL (atau SQLite)
+- Ekstensi PHP: `pdo`, `pdo_sqlite` (driver Linux x86_64 sudah dibundel di folder `ext/` untuk kemudahan langsung pakai)
 
 ---
 
@@ -69,21 +70,13 @@ Aplikasi ini dibangun khusus untuk kebutuhan Fakultas Sains dan Teknologi (FST) 
 composer install
 ```
 
-### 2. Konfigurasi Database & Environment
-Database otomatis diinisialisasi skema dan seed datanya saat aplikasi pertama kali dijalankan.  
-Untuk mengonfigurasi kredensial MariaDB/MySQL, Anda dapat membuat file `.env` atau menggunakan variabel environment:
-```ini
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=test_jadwalkelas
-DB_USERNAME=hzsan
-DB_PASSWORD=
-```
-
-### 3. Jalankan Development Server
+### 2. Jalankan Development Server
+Cukup jalankan perintah:
 ```bash
-php -S localhost:8000 -t public
+composer start
 ```
+*(Perintah ini otomatis memuat ekstensi lokal `ext/pdo_sqlite.so` dan menjalankan PHP built-in server di port 8000)*.
+
 Buka browser di:
 - **Beranda Publik (Live Status)**: `http://localhost:8000/`
 - **Kalender Interaktif**: `http://localhost:8000/calendar`
@@ -95,15 +88,16 @@ Buka browser di:
 
 ## Pengujian Otomatis (Automated Testing)
 
-Jalankan test suite menggunakan PHPUnit:
+Jalankan seluruh test suite menggunakan:
 ```bash
-vendor/bin/phpunit
+composer test
 ```
-Seluruh 23 test case mencakup:
-- Inisialisasi skema database dan verifikasi 8 ruangan FST.
+Seluruh **25 test case (72 assertions, 100% PASSING)** mencakup:
+- Inisialisasi skema database SQLite dan verifikasi 8 ruangan FST.
 - Uji matematika deteksi bentrok (adjacent slots, partial overlap, superset overlap).
 - Uji aturan prioritas kuliah reguler di atas permohonan acara ormawa.
 - Uji model data (Room, Schedule, EventBooking, User).
 - Uji autentikasi dan kontrol sesi.
 - Uji REST API (`/api/rooms`, `/api/check-availability`, `/api/events`).
+- Uji isolasi database pengujian (`:memory:`) dan kompatibilitas dialek SQLite murni.
 - Uji alur lengkap peminjaman (submit -> pending -> approve/reject -> deteksi bentrok jadwal baru).

@@ -8,7 +8,7 @@ use PDO;
 class DatabaseSetupTest extends TestCase {
     public function testDatabaseTablesAndSeedDataExist(): void {
         require_once __DIR__ . '/../app/config/config.php';
-        $db = getDbConnection(':memory:');
+        $db = getDbConnection();
         initDatabase($db);
 
         $stmt = $db->query("SELECT COUNT(*) FROM rooms");

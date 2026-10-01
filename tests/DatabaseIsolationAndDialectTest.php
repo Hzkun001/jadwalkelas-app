@@ -6,46 +6,29 @@ use PHPUnit\Framework\TestCase;
 use PDO;
 
 class DatabaseIsolationAndDialectTest extends TestCase {
-    public function testGetDbConnectionHonorsExplicitDsn(): void {
+    public function testGetDbConnectionUsesSqliteInMemoryForTests(): void {
         require_once __DIR__ . '/../app/config/config.php';
         
-        // When an explicit DSN is provided, it should not be silently swapped
-        // Test with custom dbname parameter
-        $testDbName = 'test_jadwalkelas_isolation';
-        $customDsn = "mysql:host=127.0.0.1;port=3306;dbname={$testDbName};charset=utf8mb4";
-        
-        // Create test db if not exists
-        $adminDb = new PDO("mysql:host=127.0.0.1;port=3306", 'hzsan', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        $adminDb->exec("CREATE DATABASE IF NOT EXISTS `{$testDbName}`");
+        $conn = getDbConnection();
+        $this->assertEquals('sqlite', $conn->getAttribute(PDO::ATTR_DRIVER_NAME));
 
-        $conn = getDbConnection($customDsn, 'hzsan', '');
-        $stmt = $conn->query("SELECT DATABASE()");
-        $this->assertEquals($testDbName, $stmt->fetchColumn());
-    }
-
-    public function testAppDbAndTestDbAreSeparatedByDefault(): void {
-        require_once __DIR__ . '/../app/config/config.php';
-        
-        // App environment and Test environment should use different database names
-        $appDbName = getAppDatabaseName();
-        $testDbName = getTestDatabaseName();
-
-        $this->assertNotEquals($appDbName, $testDbName);
-        $this->assertStringContainsString('test', $testDbName);
+        initDatabase($conn);
+        $stmt = $conn->query("SELECT COUNT(*) FROM rooms");
+        $this->assertEquals(8, $stmt->fetchColumn());
     }
 
     public function testSqliteSchemaAndSeedFilesAreValid(): void {
-        $sqliteSchema = __DIR__ . '/../database/schema_sqlite.sql';
-        $sqliteSeed = __DIR__ . '/../database/seed_sqlite.sql';
+        $schema = __DIR__ . '/../database/schema.sql';
+        $seed = __DIR__ . '/../database/seed.sql';
 
-        $this->assertFileExists($sqliteSchema);
-        $this->assertFileExists($sqliteSeed);
+        $this->assertFileExists($schema);
+        $this->assertFileExists($seed);
 
-        $schemaContent = file_get_contents($sqliteSchema);
+        $schemaContent = file_get_contents($schema);
         $this->assertStringNotContainsString('ENGINE=InnoDB', $schemaContent);
         $this->assertStringNotContainsString('AUTO_INCREMENT', $schemaContent);
 
-        $seedContent = file_get_contents($sqliteSeed);
+        $seedContent = file_get_contents($seed);
         $this->assertStringNotContainsString('ON DUPLICATE KEY UPDATE', $seedContent);
     }
 }

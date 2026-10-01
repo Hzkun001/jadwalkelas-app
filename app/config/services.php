@@ -5,10 +5,13 @@ use Twig\Environment;
 
 require_once __DIR__ . '/config.php';
 
-// Register PDO database service to Flight
-Flight::register('db', PDO::class, [], function() {
-    $db = getDbConnection();
-    initDatabase($db);
+// Register PDO database service to Flight via factory map
+Flight::map('db', function() {
+    static $db = null;
+    if ($db === null) {
+        $db = getDbConnection();
+        initDatabase($db);
+    }
     return $db;
 });
 
@@ -27,6 +30,6 @@ $twig = new Environment($loader, [
 // Add session helper to Twig
 $twig->addGlobal('session', $_SESSION ?? []);
 
-Flight::register('view', Environment::class, [], function() use ($twig) {
+Flight::map('view', function() use ($twig) {
     return $twig;
 });

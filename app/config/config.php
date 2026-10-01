@@ -1,73 +1,44 @@
 <?php
 
-function getAppDatabaseName(): string {
-    return getenv('DB_DATABASE') ?: 'test_jadwalkelas';
-}
-
-function getTestDatabaseName(): string {
-    return getenv('DB_TEST_DATABASE') ?: 'test_jadwalkelas_test';
-}
-
 function getDbConnection(?string $dsn = null, ?string $user = null, ?string $pass = null, bool $isTest = false): PDO {
-    // If an explicit DSN is provided, use it directly (e.g. custom DSN or sqlite::memory:)
-    if ($dsn !== null && $dsn !== ':memory:') {
-        return new PDO($dsn, $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
-    }
+    $sqliteDbFile = __DIR__ . '/../../database/app.sqlite';
 
-    if ($dsn === ':memory:') {
-        // If sqlite extension is available, allow pure in-memory SQLite
-        if (in_array('sqlite', PDO::getAvailableDrivers(), true)) {
-            $pdo = new PDO('sqlite::memory:', null, null, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]);
-            $pdo->exec("PRAGMA foreign_keys = ON;");
-            return $pdo;
+    // 1. Determine DSN
+    if ($dsn === null) {
+        $isTestEnv = $isTest || defined('PHPUNIT_RUNNING');
+        if ($isTestEnv) {
+            $dsn = 'sqlite::memory:';
+        } else {
+            $dsn = 'sqlite:' . $sqliteDbFile;
         }
     }
 
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $port = getenv('DB_PORT') ?: '3306';
-    $user = $user ?? (getenv('DB_USERNAME') ?: 'hzsan');
-    $pass = $pass ?? (getenv('DB_PASSWORD') ?: '');
-
-    // Isolate test database from development/production database
-    $isTestEnv = $isTest || defined('PHPUNIT_RUNNING');
-    $dbname = $isTestEnv ? getTestDatabaseName() : getAppDatabaseName();
-
-    // Ensure database exists if MySQL
-    try {
-        $serverConn = new PDO("mysql:host={$host};port={$port}", $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]);
-        $serverConn->exec("CREATE DATABASE IF NOT EXISTS `{$dbname}`");
-    } catch (\Throwable $e) {
-        // Fallback if user doesn't have create database rights
+    // 2. Check if SQLite driver is available
+    if (strpos($dsn, 'sqlite') === 0 && !in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+        // Check if bundled local ext/pdo_sqlite.so exists
+        $localExt = __DIR__ . '/../../ext/pdo_sqlite.so';
+        $helpMsg = "Driver PDO SQLite belum aktif di PHP.\n"
+                 . "Silakan jalankan: sudo pacman -S php-sqlite\n"
+                 . "Atau jalankan server dengan: php -d extension=" . realpath($localExt) . " -S localhost:8000 -t public";
+        throw new RuntimeException($helpMsg);
     }
 
-    $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
-
-    return new PDO($dsn, $user, $pass, [
+    $pdo = new PDO($dsn, $user, $pass, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
+
+    if (strpos($dsn, 'sqlite') === 0) {
+        $pdo->exec("PRAGMA foreign_keys = ON;");
+    }
+
+    return $pdo;
 }
 
 function initDatabase(PDO $db): void {
-    $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
-
-    if ($driver === 'sqlite') {
-        $schemaFile = __DIR__ . '/../../database/schema_sqlite.sql';
-        $seedFile = __DIR__ . '/../../database/seed_sqlite.sql';
-    } else {
-        $schemaFile = __DIR__ . '/../../database/schema.sql';
-        $seedFile = __DIR__ . '/../../database/seed.sql';
-    }
+    $schemaFile = __DIR__ . '/../../database/schema.sql';
+    $seedFile = __DIR__ . '/../../database/seed.sql';
 
     if (file_exists($schemaFile)) {
         $sql = file_get_contents($schemaFile);

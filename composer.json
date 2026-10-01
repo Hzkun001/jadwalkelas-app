@@ -24,6 +24,7 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "start": "@php -d extension=ext/pdo_sqlite.so -S localhost:8000 -t public",
+        "test": "@php -d extension=ext/pdo_sqlite.so vendor/bin/phpunit"
     }
 }
