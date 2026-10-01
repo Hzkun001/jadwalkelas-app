@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Jadwal & Ruang Kelas FST{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:bg-indigo-700 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg text-slate-900 block leading-tight">Jadwal Kelas FST</span>
+                        <span class="text-xs text-slate-500 font-medium">Monitoring & Penjadwalan Ruang</span>
+                    </div>
+                </a>
+
+                <nav class="hidden md:flex items-center gap-1 pl-4 border-l border-slate-200">
+                    <a href="/" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors {% if active_nav == 'live' %}text-indigo-600 bg-indigo-50{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                        Live Status
+                    </a>
+                    <a href="/calendar" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors {% if active_nav == 'calendar' %}text-indigo-600 bg-indigo-50{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                        Kalender Jadwal
+                    </a>
+                    <a href="/booking/create" class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors {% if active_nav == 'booking' %}text-indigo-600 bg-indigo-50{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+                        Pinjam Ruang Acara
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Right Profile / Login Actions -->
+            <div class="flex items-center gap-3">
+                {% if session.user %}
+                    <div class="flex items-center gap-3">
+                        <span class="hidden sm:inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 uppercase tracking-wider">
+                            {{ session.user.role }}
+                        </span>
+                        {% if session.user.role == 'admin' %}
+                            <a href="/admin" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors">
+                                Panel Admin
+                            </a>
+                        {% endif %}
+                        <a href="/logout" class="text-sm font-semibold text-rose-600 hover:text-rose-700 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors">
+                            Keluar
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="/login" class="text-sm font-semibold text-slate-700 hover:text-indigo-600 px-4 py-2 rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors">
+                        Masuk Petugas / Komti
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mobile sub-navigation -->
+        <div class="md:hidden flex border-t border-slate-100 px-4 py-2 gap-1 overflow-x-auto bg-slate-50 text-sm">
+            <a href="/" class="whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold {% if active_nav == 'live' %}bg-white text-indigo-600 shadow-xs{% else %}text-slate-600{% endif %}">Live Status</a>
+            <a href="/calendar" class="whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold {% if active_nav == 'calendar' %}bg-white text-indigo-600 shadow-xs{% else %}text-slate-600{% endif %}">Kalender</a>
+            <a href="/booking/create" class="whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold {% if active_nav == 'booking' %}bg-white text-indigo-600 shadow-xs{% else %}text-slate-600{% endif %}">Pinjam Ruang</a>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 space-y-1">
+            <p class="font-medium text-slate-700">Fakultas Sains dan Teknologi (FST) - Sistem Monitoring & Penjadwalan Ruang</p>
+            <p>Dibangun dengan FlightPHP & Tailwind CSS &bull; Menjamin perkuliahan bebas bentrok dan terjadwal transparan</p>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

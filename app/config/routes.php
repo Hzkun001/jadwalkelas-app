@@ -2,6 +2,18 @@
 
 use App\Controllers\AuthController;
 use App\Controllers\ApiController;
+use App\Controllers\HomeController;
+
+// Public web views
+Flight::route('GET /', function() {
+    $ctrl = new HomeController(Flight::db());
+    $ctrl->index();
+});
+
+Flight::route('GET /calendar', function() {
+    $ctrl = new HomeController(Flight::db());
+    $ctrl->calendar();
+});
 
 // Public API endpoints
 Flight::route('GET /api/rooms', function() {

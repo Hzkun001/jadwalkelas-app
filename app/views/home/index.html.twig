@@ -1,0 +1,106 @@
+{% extends "layouts/app.html.twig" %}
+
+{% block title %}Live Status Ruang Kelas FST - Jadwal Kelas App{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                    Live Monitoring
+                </span>
+                <span class="text-xs text-slate-500 font-medium">{{ day_name }}, {{ current_date }}</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Ketersediaan Ruang Kelas Lokal FST</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Pantau penggunaan ruang teori & laboratorium secara langsung untuk mencegah bentrok kuliah.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="text-right">
+                <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Jam Saat Ini</div>
+                <div class="text-2xl font-extrabold text-indigo-600 font-mono">{{ current_time }}</div>
+            </div>
+            <a href="/calendar" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-xs transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Tampilan Kalender
+            </a>
+        </div>
+    </div>
+
+    <!-- Live Grid Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for room in rooms %}
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-indigo-300 transition-all flex flex-col justify-between">
+            <div class="space-y-3">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">{{ room.room_type }}</span>
+                        <h2 class="text-lg font-bold text-slate-900 leading-tight">{{ room.name }}</h2>
+                        <p class="text-xs text-slate-500">{{ room.building }} &bull; Kapasitas {{ room.capacity }}</p>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ room.status_badge }}">
+                        {{ room.status_label }}
+                    </span>
+                </div>
+
+                <!-- Status Body -->
+                {% if room.status == 'lecture' %}
+                <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl space-y-1">
+                    <div class="text-xs font-bold text-blue-900">{{ room.current_activity.course_name }}</div>
+                    <div class="text-xs text-blue-700 flex items-center justify-between">
+                        <span class="font-medium">Kelas: {{ room.current_activity.class_name }}</span>
+                        <span class="font-mono font-semibold">{{ room.current_activity.start_time }} - {{ room.current_activity.end_time }}</span>
+                    </div>
+                    {% if room.current_activity.lecturer_name %}
+                    <div class="text-[11px] text-blue-600 truncate">Dosen: {{ room.current_activity.lecturer_name }}</div>
+                    {% endif %}
+                </div>
+                {% elseif room.status == 'event' %}
+                <div class="p-3 bg-amber-50/70 border border-amber-100 rounded-xl space-y-1">
+                    <div class="text-xs font-bold text-amber-900">{{ room.current_activity.event_name }}</div>
+                    <div class="text-xs text-amber-700 flex items-center justify-between">
+                        <span class="font-medium">Oleh: {{ room.current_activity.organizer }}</span>
+                        <span class="font-mono font-semibold">{{ room.current_activity.start_time }} - {{ room.current_activity.end_time }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-1">
+                    <div class="text-xs text-emerald-600 font-semibold flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Ruangan Bebas Digunakan
+                    </div>
+                    {% if room.next_activity %}
+                    <div class="text-[11px] text-slate-500">
+                        Kuliah berikutnya: <span class="font-semibold text-slate-700">{{ room.next_activity.course_name }}</span> pukul <span class="font-mono font-semibold">{{ room.next_activity.start_time }}</span>
+                    </div>
+                    {% else %}
+                    <div class="text-[11px] text-slate-400">Tidak ada jadwal kuliah lagi hari ini.</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Card Footer Action -->
+            <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between">
+                <a href="/calendar?room={{ room.id }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors inline-flex items-center gap-1">
+                    Cek Kalender
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a href="/booking/create?room_id={{ room.id }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+                    Pinjam Ruang
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
